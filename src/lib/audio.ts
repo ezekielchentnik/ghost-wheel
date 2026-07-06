@@ -2,12 +2,15 @@
 // low-pass "muffle" while paused, track switching, mute, and one-shot FX.
 
 export const TRACKS = [
+    { name: 'More Puzzle Madness', url: '/more-puzzle-madness.ogg' },
     { name: 'Pixel City Cruising', url: '/pixel-city-cruising.ogg' },
     { name: 'Future Grunge', url: '/future-grunge.ogg' },
-    { name: 'More Puzzle Madness', url: '/more-puzzle-madness.ogg' },
 ]
 
-const FX_URL = '/bonk.mp3'
+const FX = {
+    crash: '/bonk.mp3',
+    powerup: '/power-up-21.mp3',
+}
 
 let ctx: AudioContext | null = null;
 let musicGain: GainNode | null = null;
@@ -119,9 +122,9 @@ export async function playBackground(distort: boolean) {
     }
 }
 
-export async function playFX() {
+export async function playFX(name: keyof typeof FX = 'crash') {
     const c = ensureContext();
-    const buffer = await loadBuffer(FX_URL);
+    const buffer = await loadBuffer(FX[name]);
     const src = c.createBufferSource();
     src.buffer = buffer;
     src.connect(c.destination);

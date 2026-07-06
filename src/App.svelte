@@ -3,6 +3,7 @@
   import SteeringWheel from './lib/SteeringWheel.svelte'
   import Vehicle from './lib/Vehicle.svelte'
   import Obstacle from './lib/Obstacle.svelte'
+  import Taco from './lib/Taco.svelte'
   import Dashboard from './lib/Dashboard.svelte'
   import HowToPlay from './lib/HowToPlay.svelte'
   import { playBackground, playFX } from './lib/audio'
@@ -13,6 +14,7 @@
   let isDetected = $state(false)
   let degrees = $state(0)
   let obstacles = $state<Array<{ timestamp: number; key: string }>>([])
+  let tacos = $state<Array<{ timestamp: number; key: string }>>([])
   let detectCollisionTrigger = $state(0)
 
   let isLoading = $state(false)
@@ -46,14 +48,21 @@
         obstacles = [...obstacles, ...batch]
       }, 1000)
 
+      // A taco drops every ~7 seconds; catch it for an extra life.
+      const tacoInterval = setInterval(() => {
+        tacos = [...tacos, { timestamp: Date.now(), key: `taco-${Date.now()}` }]
+      }, 7000)
+
       const removalInterval = setInterval(() => {
         const now = Date.now()
         obstacles = obstacles.filter((o) => now - o.timestamp < 5000)
+        tacos = tacos.filter((t) => now - t.timestamp < 5000)
       }, 5000)
 
       return () => {
         clearInterval(distanceInterval)
         clearInterval(generationInterval)
+        clearInterval(tacoInterval)
         clearInterval(removalInterval)
       }
     }
@@ -106,6 +115,13 @@
     }
   }
 
+  const collectTaco = (key: string) => {
+    if (isGameOver) return
+    livesRemaining++
+    playFX('powerup')
+    tacos = tacos.filter((t) => t.key !== key)
+  }
+
   const resetGame = () => {
     isInvincible = false
     livesRemaining = 4
@@ -113,6 +129,7 @@
     isGameOver = false
     distance = 0
     obstacles = []
+    tacos = []
     vehicleLeft = window.innerWidth / 2
   }
 </script>
@@ -138,6 +155,9 @@
   <div class="absolute z-10 h-screen w-screen overflow-hidden">
     {#each obstacles as b (b.key)}
       <Obstacle isMoving={isDetected} what={vehicleRect} soWhat={collisionHandler} when={detectCollisionTrigger} />
+    {/each}
+    {#each tacos as t (t.key)}
+      <Taco isMoving={isDetected} what={vehicleRect} soWhat={() => collectTaco(t.key)} when={detectCollisionTrigger} />
     {/each}
   </div>
   <div

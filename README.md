@@ -1,5 +1,8 @@
 # Ghost Wheel
 
+
+Try it: [https://ghost-wheel.surge.sh/](https://ghost-wheel.surge.sh/)
+
 Steer a truck through trees using an invisible steering wheel — hold both hands up to the webcam and tilt. Hand detection runs on [Roboflow inferencejs](https://docs.roboflow.com/deploy/sdks/web-browser). A YOLOv8 hand-detection model (`egohands-public/9` from Roboflow Universe) runs entirely in the browser via WebGL; steering tilt is computed from the line between the two detected hand-box centers.
 
 Built with [Svelte 5](https://svelte.dev) + [Vite](https://vite.dev) + [Tailwind CSS](https://tailwindcss.com).

@@ -1,9 +1,12 @@
 <script lang="ts">
-  import { toggleMusicMuted, toggleMusicTrack } from './audio'
+  import { toggleMusicMuted, toggleMusicTrack, isMusicMuted, onMuteChange } from './audio'
 
   let { info }: { info: any } = $props()
 
-  let musicMuted = $state(false)
+  let musicMuted = $state(isMusicMuted())
+
+  // Stay in sync if mute is toggled elsewhere (e.g. the intro modal).
+  $effect(() => onMuteChange((m) => (musicMuted = m)))
 
   const nextTrack = () => {
     toggleMusicTrack()

@@ -47,6 +47,16 @@
       //    WebGL). Each pass turns the current frame into hand boxes, then a
       //    steering angle, and draws the boxes over the video.
       while (!stopped) {
+        // Idle-tab pause: when the tab is hidden, release the camera (webcam
+        // light goes off) and stop inferring; resume when the tab returns.
+        if (document.hidden) {
+          stopVideo(videoEl)
+          setHandResults({ isDetected: false, tilt: 0, degrees: 0 })
+          await waitUntilVisible()
+          if (stopped) break
+          await initVideo(videoEl)
+          continue
+        }
         const image = new CVImage(videoEl)
         const predictions = (await engine.infer(workerId, image)) as any[]
         processDetections(predictions)
@@ -55,9 +65,10 @@
     }
     run()
 
-    // Component unmount: stop the loop and free the model worker.
+    // Component unmount: stop the loop, release the camera, free the worker.
     return () => {
       stopped = true
+      stopVideo(videoEl)
       if (workerId) engine.stopWorker(workerId)
     }
   })
@@ -77,6 +88,28 @@
         },
         { once: true },
       )
+    })
+  }
+
+  // Release the webcam: stop every track on the stream (turns off the
+  // camera indicator) and detach it from the <video> element.
+  function stopVideo(videoElement: HTMLVideoElement) {
+    const stream = videoElement?.srcObject as MediaStream | null
+    stream?.getTracks().forEach((t) => t.stop())
+    if (videoElement) videoElement.srcObject = null
+  }
+
+  // Resolve once the tab becomes visible again.
+  function waitUntilVisible(): Promise<void> {
+    if (!document.hidden) return Promise.resolve()
+    return new Promise((resolve) => {
+      const onChange = () => {
+        if (!document.hidden) {
+          document.removeEventListener('visibilitychange', onChange)
+          resolve()
+        }
+      }
+      document.addEventListener('visibilitychange', onChange)
     })
   }
 

@@ -15,7 +15,7 @@ let lowPass: BiquadFilterNode | null = null;
 let musicSource: AudioBufferSourceNode | null = null;
 let startingMusic: Promise<void> | null = null;
 
-let musicMuted = false;
+let musicMuted = true; // music starts off; players opt in via a mute button
 let distorted = false;
 let trackIndex = 0;
 
@@ -73,11 +73,25 @@ export function currentTrackName(): string {
     return TRACKS[trackIndex].name;
 }
 
+export function isMusicMuted(): boolean {
+    return musicMuted;
+}
+
+// Mute can be toggled from more than one place (intro modal, dashboard);
+// listeners keep every mute button's icon in sync.
+const muteListeners = new Set<(muted: boolean) => void>();
+
+export function onMuteChange(cb: (muted: boolean) => void): () => void {
+    muteListeners.add(cb);
+    return () => muteListeners.delete(cb);
+}
+
 export function toggleMusicMuted(): boolean {
     musicMuted = !musicMuted;
     if (musicGain) {
         musicGain.gain.value = musicMuted ? 0 : 1;
     }
+    muteListeners.forEach((cb) => cb(musicMuted));
     return musicMuted;
 }
 

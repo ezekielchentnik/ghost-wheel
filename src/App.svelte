@@ -76,7 +76,16 @@
         vehicleLeft = ret
       }
     }
-    vehicleRect = vehicleEl?.getBoundingClientRect()
+    vehicleRect = visibleVehicleRect()
+  }
+
+  // vehicle.png is mostly transparent padding: the drawn truck only covers
+  // x 31-68%, y 21-85% of the image. Shrink the collision rect to those
+  // visible pixels so trees can't "hit" empty air around the truck.
+  const visibleVehicleRect = (): DOMRect | undefined => {
+    const r = vehicleEl?.getBoundingClientRect()
+    if (!r) return undefined
+    return new DOMRect(r.x + r.width * 0.31, r.y + r.height * 0.21, r.width * 0.38, r.height * 0.65)
   }
 
   const collisionHandler = () => {

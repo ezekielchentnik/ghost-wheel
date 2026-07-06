@@ -40,3 +40,7 @@ The build is a fully static SPA — deploy `dist/` to any static host.
 - `src/lib/Obstacle.svelte` / `src/lib/Vehicle.svelte` — falling trees and the truck
 - `src/lib/Dashboard.svelte` — HUD (distance, lives, pause/game-over, music mute)
 - `src/lib/audio.ts` — Web Audio background loop + collision FX
+
+## Credits
+
+- Music and sound effects by Eric Matyas — [soundimage.org](https://soundimage.org/)
